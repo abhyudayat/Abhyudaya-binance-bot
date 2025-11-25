@@ -1,5 +1,5 @@
 # Abhyudaya-binance-bot
-Guided CLI binance bot which validates the input commmand and executes different type of orders on binance.
+Guided CLI binance bot which validates the input commmand and executes different type of orders using Binance api.
 ## Binance Futures AI Trading Bot (CLI binance trading bot using Python, LangGraph and HuggingFace)
 
 This repository contains a modular, AI-powered Binance Futures trading bot built using:
