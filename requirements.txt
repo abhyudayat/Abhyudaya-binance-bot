@@ -1,0 +1,8 @@
+transformers
+torch
+accelerate
+langgraph
+python-binance
+tqdm
+numpy
+requests
