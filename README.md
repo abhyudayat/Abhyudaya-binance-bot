@@ -42,41 +42,41 @@ project_root/
 
 Before running the bot, set your Binance Futures API keys as environment variables.
 
-**Linux / Mac:**
-export BINANCE_API_KEY="your_key"
-export BINANCE_API_SECRET="your_secret"
+**Linux / Mac:**  
+export BINANCE_API_KEY="your_key"  
+export BINANCE_API_SECRET="your_secret"  
 
 **Windows PowerShell:**
-setx BINANCE_API_KEY "your_key"
-setx BINANCE_API_SECRET "your_secret"
+setx BINANCE_API_KEY "your_key"  
+setx BINANCE_API_SECRET "your_secret"  
 
-**Windows CMD:**
-set BINANCE_API_KEY=your_key
-set BINANCE_API_SECRET=your_secret
+**Windows CMD:**  
+set BINANCE_API_KEY=your_key  
+set BINANCE_API_SECRET=your_secret  
 
-**Verify:**
-echo $BINANCE_API_KEY        # Linux/Mac
-echo %BINANCE_API_KEY%       # Windows
+**Verify:**  
+echo $BINANCE_API_KEY        # Linux/Mac  
+echo %BINANCE_API_KEY%       # Windows  
 
 ## Running the Bot
 
-The bot accepts **free-form natural language commands**.
-
+The bot accepts **free-form natural language commands**.  
+  
 **MARKET ORDER**  
-python bot.py "buy btcusdt 0.01"
-
-**LIMIT ORDER**  
-python bot.py "place a limit buy on btcusdt at 86000 quantity 0.01"
-
+python bot.py "buy btcusdt 0.01"  
+  
+**LIMIT ORDER**   
+python bot.py "place a limit buy on btcusdt at 86000 quantity 0.01"  
+  
 **STOP-LIMIT ORDER**  
-python bot.py "buy 0.01 btc if price hits 86000 with limit 85950"
-
+python bot.py "buy 0.01 btc if price hits 86000 with limit 85950"  
+  
 **OCO ORDER (Take-Profit + Stop-Loss)**  
-python bot.py "set oco sell btcusdt 0.01 take profit 88000 stop 84000"
-
+python bot.py "set oco sell btcusdt 0.01 take profit 88000 stop 84000"  
+  
 **TWAP ORDER**  
-python bot.py "twap buy btcusdt 1 over 10 intervals"
-
+python bot.py "twap buy btcusdt 1 over 10 intervals"  
+  
 ---
 
 ## 🧠 How the Bot Works (Architecture)
