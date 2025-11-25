@@ -101,11 +101,11 @@ json
 ### **2. Validation Layer**
 
 The validator ensures:
-    -Correct symbol format
-    -Side is BUY/SELL
-    -Quantity is numeric & positive
-    -Price rules follow Binance filters
-    -Mandatory fields exist for each order type
+    - Correct symbol format
+    - Side is BUY/SELL
+    - Quantity is numeric & positive
+    - Price rules follow Binance filters
+    - Mandatory fields exist for each order type
     
 Invalid commands cause the bot to print:
     -error reason
