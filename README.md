@@ -113,18 +113,16 @@ Invalid commands cause the bot to print:
     
 ### **3. LangGraph Workflow**
   
-The router node directs the order to:  
-:Order	Module:
+The router node directs the order to  
+the respective Order Module:-
 - market	market_orders.py
 - limit	limit_orders.py
 - stop_limit	stop_limit.py
 - oco	advanced/oco.py
 - twap	advanced/twap.py
 
-```
 ### **4. Execution Layer**
 Each module sends a well-formed order to:  
-  
 POST /fapi/v1/order  
 or grouped logic (TP/SL for OCO, repeated orders for TWAP).  
 
