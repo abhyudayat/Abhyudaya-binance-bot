@@ -1,6 +1,6 @@
 # Abhyudaya-binance-bot
 Guided CLI binance bot which validates the input commmand and executes different type of orders on binance.
-# Binance Futures AI Trading Bot (CLI binance trading bot using Python, LangGraph and HuggingFace)
+## Binance Futures AI Trading Bot (CLI binance trading bot using Python, LangGraph and HuggingFace)
 
 This repository contains a modular, AI-powered Binance Futures trading bot built using:
 
@@ -8,7 +8,7 @@ This repository contains a modular, AI-powered Binance Futures trading bot built
 - HuggingFace Transformers (for natural-language order parsing)  
 - LangGraph (workflow routing engine)  
 - Binance Futures API  
-- Advanced trading strategies (OCO, Stop-Limit, TWAP, Grid)  
+- Advanced trading strategies (OCO, Stop-Limit, TWAP)  
 
 The bot supports **natural language commands**, validates them, and executes orders safely on Binance USDT-M Futures.
 
@@ -82,7 +82,7 @@ python bot.py "twap buy btcusdt 1 over 10 intervals"
 ## 🧠 How the Bot Works (Architecture)
 
 ### **1. LLM Parser**
-The HuggingFace model converts user input into structured JSON:  
+The HuggingFace llm model converts user input into structured JSON:  
 "buy btc 0.01 if price hits 86000"  
 
 becomes:
