@@ -14,7 +14,7 @@ The bot supports **natural language commands**, validates them, and executes ord
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```
 project_root/
 │
@@ -58,7 +58,7 @@ set BINANCE_API_SECRET=your_secret
 echo $BINANCE_API_KEY        # Linux/Mac  
 echo %BINANCE_API_KEY%       # Windows  
 
-## 📦 Installation
+## Installation
 
 Clone the repository:  
 
@@ -70,7 +70,7 @@ Install dependencies:
 pip install -r requirements.txt  
 
   
-### ✔ Required Dependencies
+### Required Dependencies
 The bot uses the following Python libraries:
 
 - `transformers` — HuggingFace model for natural-language parsing  
@@ -105,12 +105,12 @@ python bot.py "twap buy btcusdt 1 over 10 intervals"
   
 ---
 
-## 🧠 How the Bot Works (Architecture)
+## How the Bot Works (Architecture)
 
 ### **1. LLM Parser**
 The HuggingFace llm model converts user input into structured JSON:  
 "buy btc 0.01 if price hits 86000"  
-
+  
 becomes:
 ```
 json
