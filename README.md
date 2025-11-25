@@ -15,6 +15,7 @@ The bot supports **natural language commands**, validates them, and executes ord
 ---
 
 ## 📁 Project Structure
+```
 project_root/
 │
 ├── bot.py # Main CLI entry point
@@ -36,44 +37,44 @@ project_root/
 ├── bot.log # Structured JSON logs
 ├── report.pdf # Submission report (architecture, screenshots, examples)
 └── README.md # This documentation
-
+```
 ## API Setup (Required)
 
 Before running the bot, set your Binance Futures API keys as environment variables.
 
-### Linux / Mac:
+**Linux / Mac:**
 export BINANCE_API_KEY="your_key"
 export BINANCE_API_SECRET="your_secret"
 
-### Windows PowerShell:
+**Windows PowerShell:**
 setx BINANCE_API_KEY "your_key"
 setx BINANCE_API_SECRET "your_secret"
 
-### Windows CMD:
+**Windows CMD:**
 set BINANCE_API_KEY=your_key
 set BINANCE_API_SECRET=your_secret
 
-### Verify:
+**Verify:**
 echo $BINANCE_API_KEY        # Linux/Mac
 echo %BINANCE_API_KEY%       # Windows
 
-## 🚀 Running the Bot
+## Running the Bot
 
 The bot accepts **free-form natural language commands**.
 
-### MARKET ORDER
+**MARKET ORDER**
 python bot.py "buy btcusdt 0.01"
 
-### LIMIT ORDER
+**LIMIT ORDER**
 python bot.py "place a limit buy on btcusdt at 86000 quantity 0.01"
 
-### STOP-LIMIT ORDER
+**STOP-LIMIT ORDER**
 python bot.py "buy 0.01 btc if price hits 86000 with limit 85950"
 
-### OCO ORDER (Take-Profit + Stop-Loss)
+**OCO ORDER (Take-Profit + Stop-Loss)**
 python bot.py "set oco sell btcusdt 0.01 take profit 88000 stop 84000"
 
-### TWAP ORDER
+**TWAP ORDER**
 python bot.py "twap buy btcusdt 1 over 10 intervals"
 
 ---
@@ -87,7 +88,7 @@ The HuggingFace model converts user input into structured JSON:
 
 
 becomes:
-
+```
 json
 {
   "order_type": "stop_limit",
@@ -97,11 +98,12 @@ json
   "stop_price": 86000,
   "price": 85950
 }
+```
 
 ### **2. Validation Layer**
 
 The validator ensures:
-
+```
     Correct symbol format
 
     Side is BUY/SELL
@@ -111,15 +113,15 @@ The validator ensures:
     Price rules follow Binance filters
 
     Mandatory fields exist for each order type
-
+```
 Invalid commands cause the bot to print:
-
+```
     error reason
 
     suggested corrected CLI command
-
+```
 ### **3. LangGraph Workflow**
-
+```
 The router node directs the order to:
 Order Type	Module
 market	market_orders.py
@@ -128,7 +130,7 @@ stop_limit	stop_limit.py
 oco	advanced/oco.py
 twap	advanced/twap.py
 grid	advanced/grid_strategy.py
-
+```
 ### **4. Execution Layer**
 
 Each module sends a well-formed order to:
@@ -139,7 +141,7 @@ or grouped logic (TP/SL for OCO, repeated orders for TWAP).
 ### **5. Logging**
 
 Every order and error is logged to bot.log as structured JSON:
-
+```
 {
   "timestamp": "2025-11-25T14:12:01",
   "level": "INFO",
@@ -151,3 +153,4 @@ Every order and error is logged to bot.log as structured JSON:
     "quantity": 0.01
   }
 }
+```
