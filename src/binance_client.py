@@ -13,5 +13,9 @@ def get_client(testnet=True):
             "API keys not found. Set BINANCE_API_KEY and BINANCE_API_SECRET "
             "as environment variables before running the bot."
         )
+    client = Client(api_key, api_secret, testnet=testnet)
+    
+    if testnet:
+        client.FUTURES_URL = "https://testnet.binancefuture.com/fapi/"
 
-    return Client(api_key, api_secret, testnet=testnet)
+    return client
