@@ -58,6 +58,32 @@ set BINANCE_API_SECRET=your_secret
 echo $BINANCE_API_KEY        # Linux/Mac  
 echo %BINANCE_API_KEY%       # Windows  
 
+## 📦 Installation
+
+Clone the repository:  
+
+git clone https://github.com/<your-username>/<your-repo>.git  
+cd <your-repo>  
+  
+
+Install dependencies:  
+pip install -r requirements.txt  
+
+  
+### ✔ Required Dependencies
+The bot uses the following Python libraries:
+
+- `transformers` — HuggingFace model for natural-language parsing  
+- `torch` — Required backend for Transformers  
+- `accelerate` — Efficient HuggingFace model loading  
+- `langgraph` — Routing workflow engine  
+- `python-binance` — Binance USDT-M Futures API client  
+- `requests` — Network utilities  
+- `tqdm` — Progress bars  
+- `numpy` — Numeric utilities  
+
+These are automatically installed via `pip install -r requirements.txt`.
+
 ## Running the Bot
 
 The bot accepts **free-form natural language commands**.  
