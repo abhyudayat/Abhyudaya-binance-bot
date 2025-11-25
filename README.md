@@ -100,27 +100,27 @@ json
 
 ### **2. Validation Layer**
 
-The validator ensures:
-    - Correct symbol format
-    - Side is BUY/SELL
-    - Quantity is numeric & positive
-    - Price rules follow Binance filters
-    - Mandatory fields exist for each order type
+The validator ensures:  
+- Correct symbol format
+- Side is BUY/SELL
+- Quantity is numeric & positive
+- Price rules follow Binance filters
+- Mandatory fields exist for each order type
     
-Invalid commands cause the bot to print:
-    -error reason
-    -suggested corrected CLI command
+Invalid commands cause the bot to print:  
+- error reason
+- suggested corrected CLI command
     
 ### **3. LangGraph Workflow**
   
 The router node directs the order to:  
 :Order	Module:
--market	market_orders.py
--limit	limit_orders.py
--stop_limit	stop_limit.py
--oco	advanced/oco.py
--twap	advanced/twap.py
--grid	advanced/grid_strategy.py
+- market	market_orders.py
+- limit	limit_orders.py
+- stop_limit	stop_limit.py
+- oco	advanced/oco.py
+- twap	advanced/twap.py
+
 ```
 ### **4. Execution Layer**
 Each module sends a well-formed order to:  
