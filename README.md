@@ -62,19 +62,19 @@ echo %BINANCE_API_KEY%       # Windows
 
 The bot accepts **free-form natural language commands**.
 
-**MARKET ORDER**
+**MARKET ORDER**  
 python bot.py "buy btcusdt 0.01"
 
-**LIMIT ORDER**
+**LIMIT ORDER**  
 python bot.py "place a limit buy on btcusdt at 86000 quantity 0.01"
 
-**STOP-LIMIT ORDER**
+**STOP-LIMIT ORDER**  
 python bot.py "buy 0.01 btc if price hits 86000 with limit 85950"
 
-**OCO ORDER (Take-Profit + Stop-Loss)**
+**OCO ORDER (Take-Profit + Stop-Loss)**  
 python bot.py "set oco sell btcusdt 0.01 take profit 88000 stop 84000"
 
-**TWAP ORDER**
+**TWAP ORDER**  
 python bot.py "twap buy btcusdt 1 over 10 intervals"
 
 ---
@@ -82,10 +82,8 @@ python bot.py "twap buy btcusdt 1 over 10 intervals"
 ## 🧠 How the Bot Works (Architecture)
 
 ### **1. LLM Parser**
-The HuggingFace model converts user input into structured JSON:
-
-"buy btc 0.01 if price hits 86000"
-
+The HuggingFace model converts user input into structured JSON:  
+"buy btc 0.01 if price hits 86000"  
 
 becomes:
 ```
