@@ -1,44 +1,35 @@
 # project_root/src/limit_orders.py
 
-from src.binance_client import client
-from src.logger import log, log_error
+from src.logger import log_info, log_error, log_api_request, log_api_response, log_order
 
-def execute_limit(state):
+def execute_limit_order(client, symbol, side, quantity, price, time_in_force="GTC"):
     """
-    Executes a LIMIT order on Binance Futures.
-    state contains:
-        - symbol
-        - side
-        - quantity
-        - price
-        - time_in_force (optional, default GTC)
+    Execute a LIMIT order on Binance Futures Testnet.
     """
-
-    symbol = state["symbol"]
-    side = state["side"]
-    quantity = state["quantity"]
-    price = state["price"]
-    tif = state.get("time_in_force", "GTC")   # default: Good-Till-Cancelled
 
     if client is None:
-        log_error("Binance client not initialized", state)
-        raise RuntimeError("Binance client not available. Set API keys first.")
+        log_error("Binance client not initialized")
+        raise RuntimeError("Binance client not available")
+
+    request_payload = {
+        "symbol": symbol,
+        "side": side,
+        "type": "LIMIT",
+        "quantity": quantity,
+        "price": price,
+        "timeInForce": time_in_force
+    }
 
     try:
-        log("Placing LIMIT order", state)
+        log_api_request("Placing LIMIT order", request_payload)
 
-        response = client.futures_create_order(
-            symbol=symbol,
-            side=side,
-            type="LIMIT",
-            quantity=quantity,
-            price=price,
-            timeInForce=tif
-        )
+        response = client.futures_create_order(**request_payload)
 
-        log("LIMIT order executed", {"response": response})
+        log_api_response("LIMIT order executed", response)
+        log_order("LIMIT", response)
+
         return response
 
     except Exception as e:
-        log_error("Limit order failed", {"error": str(e), "state": state})
-        raise e
+        log_error("Limit order failed", {"error": str(e)})
+        raise

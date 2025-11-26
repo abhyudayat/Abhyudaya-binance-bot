@@ -24,36 +24,37 @@ class LLMParser:
     def parse(self, text: str):
         """
         Convert natural language into JSON fields:
-        - order_type
-        - symbol
-        - side
-        - quantity
-        - price (optional)
-        - stop_price (optional)
+            - order_type
+            - symbol
+            - side
+            - quantity
+        Optional:
+            - price
+            - stop_price
+            - twap_intervals
+            - twap_delay
         """
         if self.pipe is None:
             raise RuntimeError("LLM pipeline not initialized.")
 
         prompt = f"""
-Extract a structured JSON command for a Binance futures order.
+Convert the following command into STRICT JSON for a Binance futures order.
 Required keys:
-- order_type
-- symbol
-- side
-- quantity
-Optional:
-- price
-- stop_price
+  "order_type", "symbol", "side", "quantity"
+Optional keys:
+  "price", "stop_price", "twap_intervals", "twap_delay"
 
 Command: {text}
 
-Return ONLY valid JSON:
+Return ONLY valid JSON. No explanation.
 """
+
         try:
-            result = self.pipe(prompt)[0]["generated_text"]
-            # Take the JSON part
-            json_str = result[result.find("{") : result.rfind("}") + 1]
+            output = self.pipe(prompt)[0]["generated_text"]
+
+            json_str = output[output.find("{"): output.rfind("}") + 1]
             data = json.loads(json_str)
+
             return data
 
         except Exception as e:

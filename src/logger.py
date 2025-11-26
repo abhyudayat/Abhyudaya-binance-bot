@@ -1,37 +1,67 @@
-# project_root/src/logger.py
+# src/logger.py
 
-import datetime
 import json
+from datetime import datetime
 
-LOG_PATH = "project_root/bot.log"
+LOG_FILE = "bot.log"   # correct relative path
 
-def log(message, data=None, level="INFO"):
+
+def _write_log(entry: dict):
     """
-    Append structured logs to bot.log
-    message: Short description
-    data: dict of details (optional)
-    level: INFO / ERROR / WARNING
+    Write a single log entry in JSON format.
     """
+    try:
+        entry["timestamp"] = datetime.utcnow().isoformat()
+        with open(LOG_FILE, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as e:
+        print("Failed to write log:", e)
 
-    entry = {
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-        "level": level,
+
+def log_info(message: str, data: dict = None):
+    _write_log({
+        "type": "INFO",
         "message": message,
-        "data": data
-    }
-
-    with open(LOG_PATH, "a") as f:
-        f.write(json.dumps(entry) + "
-")
+        "data": data or {}
+    })
 
 
-def log_error(message, data=None):
-    """Helper for logging errors."""
-    log(message, data, level="ERROR")
+def log_error(message: str, data: dict = None):
+    _write_log({
+        "type": "ERROR",
+        "message": message,
+        "data": data or {}
+    })
 
 
-def log_order(order_type, state):
+def log_api_request(endpoint: str, payload: dict):
     """
-    Logs any order execution with state details.
+    Log outgoing API requests.
     """
-    log(f"Executed {order_type} order", data=state, level="INFO")
+    _write_log({
+        "type": "API_REQUEST",
+        "endpoint": endpoint,
+        "payload": payload
+    })
+
+
+def log_api_response(endpoint: str, response: dict):
+    """
+    Log incoming API responses.
+    """
+    _write_log({
+        "type": "API_RESPONSE",
+        "endpoint": endpoint,
+        "response": response
+    })
+
+
+def log_order(order_type: str, details: dict):
+    """
+    Log order execution events.
+    """
+    _write_log({
+        "type": "ORDER_EXECUTION",
+        "order_type": order_type,
+        "details": details
+    })

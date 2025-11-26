@@ -1,38 +1,57 @@
-# project_root/src/market_orders.py
+# src/market_orders.py
 
-from src.binance_client import client
-from src.logger import log, log_error
+from src.logger import (
+    log_info,
+    log_error,
+    log_api_request,
+    log_api_response,
+    log_order
+)
 
-def execute_market(state):
+def execute_market_order(client, symbol, side, quantity):
     """
-    Executes a market order on Binance Futures.
-    state contains:
-        - symbol
-        - side (BUY/SELL)
-        - quantity
+    Executes a MARKET order on Binance Futures Testnet.
+    
+    Parameters:
+        client   : Binance Client instance
+        symbol   : "BTCUSDT", "ETHUSDT", etc.
+        side     : "BUY" or "SELL"
+        quantity : float or int
     """
-    symbol = state["symbol"]
-    side = state["side"]
-    quantity = state["quantity"]
 
-    # Safety check: if client is not available
-    if client is None:
-        log_error("Binance client not initialized", state)
-        raise RuntimeError("Binance client not available. Set API keys before running the bot.")
+    order_payload = {
+        "symbol": symbol,
+        "side": side,
+        "type": "MARKET",
+        "quantity": quantity
+    }
 
     try:
-        log("Placing MARKET order", state)
+        # Logging the request
+        log_info("Placing MARKET order", order_payload)
+        log_api_request("futures_create_order", order_payload)
 
-        response = client.futures_create_order(
-            symbol=symbol,
-            side=side,
-            type="MARKET",
-            quantity=quantity
-        )
+        # Execute the order
+        response = client.futures_create_order(**order_payload)
 
-        log("MARKET order executed", {"response": response})
+        # Log the response
+        log_api_response("futures_create_order", response)
+        log_order("MARKET", {
+            "symbol": symbol,
+            "side": side,
+            "quantity": quantity,
+            "response": response
+        })
+
         return response
 
     except Exception as e:
-        log_error("Market order failed", {"error": str(e), "state": state})
-        raise e
+        error_info = {
+            "symbol": symbol,
+            "side": side,
+            "quantity": quantity,
+            "error": str(e)
+        }
+
+        log_error("Market order FAILED", error_info)
+        raise

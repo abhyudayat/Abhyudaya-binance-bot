@@ -1,5 +1,3 @@
-
-
 # project_root/bot.py
 
 import sys
@@ -34,7 +32,7 @@ python bot.py "<help>"
         suggestion = parser_llm.pipe(correction_prompt)[0]["generated_text"]
         return suggestion.strip()
     except Exception:
-        return "python bot.py "help""
+        return 'python bot.py "help"'
 
 
 if __name__ == "__main__":
@@ -55,25 +53,20 @@ if __name__ == "__main__":
         print(" API setup error:", str(e))
         sys.exit(1)
 
-    # Inject client globally into modules
-    import src.binance_client
-    src.binance_client.client = client
-
     try:
         parsed = parser_llm.parse(user_text)
+        parsed['client']=client
         result = graph.invoke(parsed)
-        print("
- ORDER EXECUTION RESULT:")
+        print("\nORDER EXECUTION RESULT:")
         print(result)
 
     except Exception as e:
         error_message = str(e)
         log_error("Bot failed", {"error": error_message, "input": user_text})
 
-        print("
- ERROR:", error_message)
+        print("\nERROR:", error_message)
         print("Trying to suggest a correction...")
 
         suggestion = suggest_correction(user_text, error_message)
-        print(" Suggested CLI:")
+        print(" \nSuggested CLI:")
         print(suggestion)

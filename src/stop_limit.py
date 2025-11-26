@@ -1,45 +1,42 @@
 # project_root/src/stop_limit.py
 
-from src.binance_client import client
-from src.logger import log, log_error
+from src.logger import (
+    log_info,
+    log_error,
+    log_api_request,
+    log_api_response,
+    log_order,
+)
 
-def execute_stop_limit(state):
+def execute_stop_limit_order(client, symbol, side, quantity, stop_price, limit_price):
     """
-    Executes a STOP-LIMIT order on Binance Futures.
-    state contains:
-        - symbol
-        - side
-        - quantity
-        - stop_price
-        - price
+    Execute a STOP-LIMIT order on Binance Futures Testnet.
     """
-
-    symbol = state["symbol"]
-    side = state["side"]
-    quantity = state["quantity"]
-    stop_price = state["stop_price"]
-    limit_price = state["price"]   # state["price"] is the LIMIT price
 
     if client is None:
-        log_error("Binance client not initialized", state)
-        raise RuntimeError("Binance client not available. Set API keys first.")
+        log_error("Binance client not initialized")
+        raise RuntimeError("Binance client not available")
+
+    request_payload = {
+        "symbol": symbol,
+        "side": side,
+        "type": "STOP",
+        "quantity": quantity,
+        "price": limit_price,   # LIMIT price
+        "stopPrice": stop_price,
+        "timeInForce": "GTC"
+    }
 
     try:
-        log("Placing STOP-LIMIT order", state)
+        log_api_request("Placing STOP-LIMIT order", request_payload)
 
-        response = client.futures_create_order(
-            symbol=symbol,
-            side=side,
-            type="STOP",
-            quantity=quantity,
-            price=limit_price,
-            stopPrice=stop_price,
-            timeInForce="GTC"
-        )
+        response = client.futures_create_order(**request_payload)
 
-        log("STOP-LIMIT order executed", {"response": response})
+        log_api_response("STOP-LIMIT order executed", response)
+        log_order("STOP-LIMIT", response)
+
         return response
 
     except Exception as e:
-        log_error("Stop-limit order failed", {"error": str(e), "state": state})
-        raise e
+        log_error("Stop-limit order failed", {"error": str(e)})
+        raise

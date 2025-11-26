@@ -1,45 +1,36 @@
 # project_root/src/advanced/twap.py
 
 import time
-from src.binance_client import client
-from src.logger import log, log_error
+from src.logger import (
+    log_info,
+    log_error,
+    log_api_request,
+    log_api_response,
+    log_order,
+)
 
-
-def execute_twap(state):
+def execute_twap_order(client, symbol, side, total_quantity, intervals=5, delay=60):
     """
-    Executes a TWAP strategy: splits a large order into smaller MARKET orders
-    executed evenly over a time period.
-
-    Expected fields:
-        - symbol
-        - side
-        - quantity        : total amount
-        - twap_intervals  : into how many chunks (default = 5)
-        - twap_delay      : seconds between chunks (default = 60)
+    TWAP Strategy (Time-Weighted Average Price)
+    Splits a large MARKET order into smaller chunks executed over time.
     """
 
-    symbol = state["symbol"]
-    side = state["side"]
-    total_qty = state["quantity"]
+    if client is None:
+        log_error("Binance client not initialized")
+        raise RuntimeError("Binance client not available")
 
-    # Defaults if not provided by the LLM or user
-    intervals = int(state.get("twap_intervals", 5))   # number of chunks
-    delay = float(state.get("twap_delay", 60))        # time between chunks in seconds
+    intervals = int(intervals)
+    delay = float(delay)
 
     if intervals <= 0:
         raise ValueError("twap_intervals must be > 0")
 
-    if client is None:
-        log_error("Binance client not initialized", state)
-        raise RuntimeError("Binance client not available. Set API keys first.")
+    qty_per_order = total_quantity / intervals
 
-    # Calculate per-order chunk
-    qty_per_order = total_qty / intervals
-
-    log("Starting TWAP execution", {
+    log_info("Starting TWAP execution", {
         "symbol": symbol,
         "side": side,
-        "total_qty": total_qty,
+        "total_qty": total_quantity,
         "intervals": intervals,
         "delay": delay,
         "chunk_qty": qty_per_order
@@ -49,25 +40,26 @@ def execute_twap(state):
 
     try:
         for i in range(intervals):
-            log(f"TWAP chunk {i+1}/{intervals}: submitting order", {"qty": qty_per_order})
 
-            # Place MARKET order for each chunk
-            order = client.futures_create_order(
-                symbol=symbol,
-                side=side,
-                type="MARKET",
-                quantity=qty_per_order
-            )
+            request_payload = {
+                "symbol": symbol,
+                "side": side,
+                "type": "MARKET",
+                "quantity": qty_per_order
+            }
+
+            log_api_request(f"TWAP chunk {i+1}/{intervals}", request_payload)
+            order = client.futures_create_order(**request_payload)
+            log_api_response("TWAP MARKET order executed", order)
+            log_order("TWAP", order)
 
             responses.append(order)
 
-            # Wait before next order unless it's the last one
             if i < intervals - 1:
                 time.sleep(delay)
 
-        log("TWAP strategy complete", {"responses": responses})
         return responses
 
     except Exception as e:
-        log_error("TWAP execution failed", {"error": str(e), "state": state})
-        raise e
+        log_error("TWAP execution failed", {"error": str(e)})
+        raise

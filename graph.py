@@ -1,81 +1,120 @@
 # project_root/graph.py
 
 from langgraph.graph import StateGraph
+
 from src.validators import validate
-from src.market_orders import execute_market
-from src.limit_orders import execute_limit
-from src.stop_limit import execute_stop_limit
-from src.advanced.oco import execute_oco
-from src.advanced.twap import execute_twap
-from src.advanced.grid_strategy import execute_grid
-from src.logger import log, log_error
+from src.market_orders import execute_market_order
+from src.limit_orders import execute_limit_order
+from src.stop_limit import execute_stop_limit_order
+from src.advanced.oco import execute_oco_order
+from src.advanced.twap import execute_twap_order
+
+from src.logger import log_info, log_error
 
 
 def build_bot_graph():
-    """
-    Builds a LangGraph workflow that:
-    1. Validates the input
-    2. Routes to the correct order module
-    3. Logs and returns output
-    """
-
     graph = StateGraph()
 
-    # --- Node 1: VALIDATE INPUT ---
+    # -------------------------------------------------
+    # Step 1: VALIDATE INPUT
+    # -------------------------------------------------
     @graph.node
     def validate_node(state):
         try:
             cleaned = validate(state)
-            return cleaned
+            return {**state, **cleaned}  # merge normalized fields
         except Exception as e:
             log_error("Validation error", {"error": str(e), "input": state})
             raise
 
-    # --- Node 2: ROUTE ORDER TYPE ---
+    # -------------------------------------------------
+    # Step 2: ROUTE ORDER TYPE
+    # -------------------------------------------------
     @graph.node
     def route_node(state):
-        order_type = state["order_type"].lower()
+        return state["order_type"].lower()   # return next-node key
 
-        # return a special key that determines the next node
-        return {"next": order_type, **state}
-
-    # --- Node 3A: MARKET ORDER ---
+    # -------------------------------------------------
+    # Step 3A: MARKET ORDER
+    # -------------------------------------------------
     @graph.node
     def market_node(state):
-        return execute_market(state)
+        client = state["client"]
+        return execute_market_order(
+            client,
+            state["symbol"],
+            state["side"],
+            state["quantity"]
+        )
 
-    # --- Node 3B: LIMIT ORDER ---
+    # -------------------------------------------------
+    # Step 3B: LIMIT ORDER
+    # -------------------------------------------------
     @graph.node
     def limit_node(state):
-        return execute_limit(state)
+        client = state["client"]
+        return execute_limit_order(
+            client,
+            state["symbol"],
+            state["side"],
+            state["quantity"],
+            state["price"],
+        )
 
-    # --- Node 3C: STOP-LIMIT ORDER ---
+    # -------------------------------------------------
+    # Step 3C: STOP-LIMIT
+    # -------------------------------------------------
     @graph.node
     def stop_limit_node(state):
-        return execute_stop_limit(state)
+        client = state["client"]
+        return execute_stop_limit_order(
+            client,
+            state["symbol"],
+            state["side"],
+            state["quantity"],
+            state["stop_price"],
+            state["price"]
+        )
 
-    # --- Node 3D: OCO ORDER ---
+    # -------------------------------------------------
+    # Step 3D: OCO ORDER
+    # -------------------------------------------------
     @graph.node
     def oco_node(state):
-        return execute_oco(state)
+        client = state["client"]
+        return execute_oco_order(
+            client,
+            state["symbol"],
+            state["side"],
+            state["quantity"],
+            state["price"],
+            state["stop_price"]
+        )
 
-    # --- Node 3E: TWAP ORDER ---
+    # -------------------------------------------------
+    # Step 3E: TWAP ORDER
+    # -------------------------------------------------
     @graph.node
     def twap_node(state):
-        return execute_twap(state)
+        client = state["client"]
+        return execute_twap_order(
+            client,
+            state["symbol"],
+            state["side"],
+            state["quantity"]
+        )
 
-    # --- Node 3F: GRID ORDER ---
-    @graph.node
-    def grid_node(state):
-        return execute_grid(state)
-
-    # Final order → logger
+    # -------------------------------------------------
+    # Final Node
+    # -------------------------------------------------
     @graph.node
     def done_node(state):
-        log("Order execution complete", state)
+        log_info("Order execution complete", {"result": state})
         return state
 
-    # --- Graph Structure ---
+    # -------------------------------------------------
+    # Graph Edges
+    # -------------------------------------------------
 
     graph.add_edge("validate_node", "route_node")
 
@@ -87,7 +126,6 @@ def build_bot_graph():
             "stop_limit": "stop_limit_node",
             "oco": "oco_node",
             "twap": "twap_node",
-            "grid": "grid_node",
         }
     )
 
