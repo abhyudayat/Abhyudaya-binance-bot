@@ -9,38 +9,10 @@ from src.binance_client import get_client
 parser_llm = LLMParser()
 graph = build_bot_graph()
 
-def suggest_correction(user_text, error_message):
-    """
-    Use LLM to suggest a corrected CLI command based on the error.
-    """
-    try:
-        correction_prompt = f"""
-You are an assistant that helps correct CLI trading commands.
-
-The user typed:
-"{user_text}"
-
-The system error was:
-"{error_message}"
-
-Return ONLY a corrected CLI command in this format:
-python bot.py "<corrected command>"
-
-If you cannot correct it, return:
-python bot.py "<help>"
-"""
-        suggestion = parser_llm.pipe(correction_prompt)[0]["generated_text"]
-        return suggestion.strip()
-    except Exception:
-        return 'python bot.py "help"'
-
 
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        print("Usage:")
-        print("export BINANCE_API_KEY=xxx")
-        print("export BINANCE_API_SECRET=yyy")
         print('python bot.py "your trading command"')
         sys.exit(1)
 
@@ -67,6 +39,5 @@ if __name__ == "__main__":
         print("\nERROR:", error_message)
         print("Trying to suggest a correction...")
 
-        suggestion = suggest_correction(user_text, error_message)
-        print(" \nSuggested CLI:")
+        suggestion = parser_llm.suggest_correction(user_text, error_message)
         print(suggestion)

@@ -26,17 +26,19 @@ class LLMParser:
         system_prompt = """
 You are a Trader who knows the trading keywords for a Binance Futures bot.
 You have to parse the user input into a JSON.
-Convert the user's message into a STRICT JSON object by:
-1)  Extracting order type which could be only among th following:
-    market, limit, stop_limit, oco or twap
-2)  Extracting the coin symbol like BTCUSDT for bitcoin, etc
-3)  Extracting the side i.e. SELL or BUY
-4)  Extracting quantity like 0.1, 0.3, 3, 10, etc.
-5)  Extracting price which would be an integer or real number like 3200, 1000.15, etc.
-6)  EXtracting the stop price which would a integer linked to Stop price and mentioned after it in the user input.
+Look at the user input, brainstorm and logically assing the following: 
+Required keys:
+1)  "order_type" which will be only among th following (market,limit, stop_limit, oco or twap).
+2)  "symbol" will be the coin symbol like BTCUSDT for bitcoin, etc
+3)  "side" i.e. SELL or BUY
+4)  "quantity" like 0.1, 0.3, 3, 10, 100 etc.
+
+Optional Keys based on order type other than market: 
+5)  "price" which would the limit prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number like 3200, 1000.15, etc.
+6)  "stop_price" which would a integer linked to Stop price and mentioned after it in the user input.
     *(It cannot not be same a price)
-7)  Extracting the no. of intervals of time unit mentioned for twap order duration.
-8)  Extracting the time unit mentioned for the twap order (like )
+7)  "twap_interval" the no. of intervals of time unit mentioned for twap order duration.
+8)  "twap_delay" the time unit mentioned for the twap order
 REQUIRED:
 - order_type         (Strictly: market, limit, stop_limit, oco or twap)
 - symbol             (convert to UPPERCASE Binance format, e.g. btc→BTCUSDT)
@@ -55,16 +57,22 @@ RULES:
 - Only return valid JSON.
 - No explanations, no text outside JSON.
 Example:
+$ python bot.py "buy 2 btc"
+- order_type = market       
+- symbol    = BTCUSDT
+- side      = BUY
+- quantity  = 2
+
 $ python bot.py "sell 1 eth limit at 3200"
--order_type = limit       
-- symbol    = ETHUSDT         BTCUSDT)
+- order_type = limit       
+- symbol    = ETHUSDT
 - side      = SELL
 - quantity  = 1
 - price     = 3200
 
 $ python bot.py "twap buy btc amount 0.3"
 - order_type = twap      
-- symbol    = BTCUSDT        BTCUSDT)
+- symbol    = BTCUSDT
 - side      = BUY
 - quantity  = 0.3
 
@@ -72,8 +80,8 @@ $ python bot.py "sell 0.5 eth oco for 2700 stop_price 3200"
 - order type = oco
 - symbol     = ETHUSDT
 - side       = SELL
-- Quantity   = 0.5
-- Price      = 2700
+- quantity   = 0.5
+- price      = 2700
 - stop_price = 3200
 """
 
@@ -109,4 +117,58 @@ $ python bot.py "sell 0.5 eth oco for 2700 stop_price 3200"
         except Exception as e:
             log_error("LLM parsing failed", {"error": str(e), "input": text})
             raise RuntimeError("Failed to parse trading command.") from e
+
+
+    def suggest_correction(self, user_text, error_message):
+        """
+        Use LLM to suggest a corrected CLI command based on the error and explain the issue.
+        """
+        # Provide context to the model for suggesting corrections and explaining the error.
+        system_prompt = """
+You are an assistant that helps correct CLI trading commands.
+The user typed:
+"{user_text}"
+The system error was:
+"{error_message}"
+
+Your task is to:
+1. Identify the possible mistake in the user's command.
+2. Suggest a corrected CLI command that would work for the trading bot.
+3. Provide an explanation of the error and how the correction fixes it.
+
+Return only the corrected command and the explanation in this format:
+
+Corrected command:
+python bot.py "<corrected command>"
+
+Explanation:
+<error explanation here>
+If you cannot correct it, return:
+python bot.py "<help>"
+Explanation:
+Provide a detailed explanation of the issue.
+"""
+
+        user_prompt = f"Command: {user_text}\nError: {error_message}"
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.0,
+            "max_tokens": 1000,
+        }
+
+        try:
+            response = requests.post(self.url, headers=self.headers, json=payload)
+            data = response.json()
+
+            content = data["choices"][0]["message"]["content"]
+            return content
+
+        except Exception as e:
+            log_error("LLM suggestion failed", {"error": str(e), "input": user_text})
+            return 'The command could not be parsed due to an error. Please check your input and try again.'
 
