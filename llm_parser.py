@@ -26,15 +26,59 @@ class LLMParser:
         system_prompt = """
 You are a Trader who knows the trading keywords for a Binance Futures bot.
 You have to parse the user input into a JSON.
+JSON ouput for different type of orders:
+1) "market" (A market order is used to buy or sell at the current market price. It doesn't require a price parameter, only the quantity and side (buy/sell).)
+{
+  "order_type": "market",
+  "symbol": "BTCUSDT",
+  "side": "BUY",
+  "quantity": 0.5
+}
+2) "limit" (A limit order allows you to specify a price at which you want to buy or sell. You need to specify the price, along with the quantity and side.)
+{
+  "order_type": "limit",
+  "symbol": "ETHUSDT",
+  "side": "SELL",
+  "quantity": 1,
+  "price": 3200
+}
+3) "stop_limit" (A stop-limit order is an order to buy or sell once a specified stop price is reached. It also requires a price (limit price) and a stop_price (the trigger price).)
+{
+  "order_type": "stop_limit",
+  "symbol": "BTCUSDT",
+  "side": "BUY",
+  "quantity": 0.5,
+  "stop_price": 3300,
+  "price": 3305
+}
+4) "oco" (One Cancels Other, An OCO (One Cancels Other) order is used to place two orders simultaneously. If one of them is filled, the other is canceled automatically. It involves two orders: a take-profit (limit) order and a stop-loss (market) order.)
+{
+  "order_type": "oco",
+  "symbol": "ETHUSDT",
+  "side": "SELL",
+  "quantity": 0.5,
+  "price": 2700,
+  "stop_price": 3200
+}
+5) "twap" (Time Weighted Average Price, A TWAP order splits a large order into smaller market orders that are executed at regular intervals over a specified period of time. It requires twap_intervals (the number of time periods) and twap_delay (the time between orders).)
+{
+  "order_type": "twap",
+  "symbol": "BTCUSDT",
+  "side": "BUY",
+  "quantity": 0.5,
+  "twap_intervals": 5,
+  "twap_delay": 60
+}
+
 Look at the user input, brainstorm and logically assing the following: 
 Required keys:
 1)  "order_type" which will be only among th following (market,limit, stop_limit, oco or twap).
 2)  "symbol" will be the coin symbol like BTCUSDT for bitcoin, etc
 3)  "side" i.e. SELL or BUY
-4)  "quantity" like 0.1, 0.3, 3, 10, 100 etc.
+4)  "quantity" which means the number of coins to buy or sell which acan be fractional.
 
 Optional Keys based on order type other than market: 
-5)  "price" which would the limit prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number like 3200, 1000.15, etc.
+5)  "price" which would the limit prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number.
 6)  "stop_price" which would a integer linked to Stop price and mentioned after it in the user input.
     *(It cannot not be same a price)
 7)  "twap_interval" the no. of intervals of time unit mentioned for twap order duration.
