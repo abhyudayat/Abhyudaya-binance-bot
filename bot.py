@@ -3,7 +3,7 @@
 import sys
 from llm_parser import LLMParser
 from graph import build_bot_graph
-from src.logger import log_error
+from src.logger import log_error, log_info
 from src.binance_client import get_client
 
 parser_llm = LLMParser()
@@ -17,12 +17,13 @@ if __name__ == "__main__":
         sys.exit(1)
 
     user_text = " ".join(sys.argv[1:])
-
+    log_info("START: Command recieved",{"input":user_text})
     # Load API keys from environment variables
     try:
         client = get_client(testnet=True)
     except Exception as e:
         print(" API setup error:", str(e))
+        log_error("API setup failed", {"error": str(e)})
         sys.exit(1)
 
     try:
