@@ -1,3 +1,8 @@
+# /llm_parser.py 
+# Establishes the HuggingFace API connection and initializes a chat model
+# Initializes prompt for command parsing
+# Initializes prompt for command suggestion in case of error
+
 import json
 import requests
 import os
@@ -9,7 +14,7 @@ class LLMParser:
     with a supported chat model.
     """
 
-    def __init__(self, model="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"):
+    def __init__(self, model="meta-llama/Llama-2-13b-chat-hf"):
         self.model = model
         self.api_key = os.getenv("HF_API_KEY")
         if not self.api_key:
@@ -25,31 +30,31 @@ class LLMParser:
 
         system_prompt = """
 You are a Trader who knows the trading keywords for a Binance Futures bot.
-You have to parse the user input into a JSON.
-JSON ouput for different type of orders:
+You have to parse the user input CLI into a JSON.
+JSON ouput keys for different type of orders are:
 1) "market" (A market order is used to buy or sell at the current market price. It doesn't require a price parameter, only the quantity and side (buy/sell).)
 {
-  "order_type": "market",
-  "symbol": "BTCUSDT",
-  "side": "BUY",
-  "quantity": 0.5
+  "order_type": ,
+  "symbol": ,
+  "side": ,
+  "quantity": ,
 }
 2) "limit" (A limit order allows you to specify a price at which you want to buy or sell. You need to specify the price, along with the quantity and side.)
 {
-  "order_type": "limit",
-  "symbol": "ETHUSDT",
-  "side": "SELL",
-  "quantity": 1,
-  "price": 3200
+  "order_type": ,
+  "symbol": ,
+  "side": ,
+  "quantity": ,
+  "price": ,
 }
 3) "stop_limit" (A stop-limit order is an order to buy or sell once a specified stop price is reached. It also requires a price (limit price) and a stop_price (the trigger price).)
 {
-  "order_type": "stop_limit",
-  "symbol": "BTCUSDT",
-  "side": "BUY",
-  "quantity": 0.5,
-  "stop_price": 3300,
-  "price": 3305
+  "order_type": ,
+  "symbol": ,
+  "side": ,
+  "quantity": ,
+  "stop_price": ,
+  "price": ,
 }
 4) "oco" (One Cancels Other, An OCO (One Cancels Other) order is used to place two orders simultaneously. If one of them is filled, the other is canceled automatically. It involves two orders: a take-profit (limit) order and a stop-loss (market) order.)
 {
@@ -72,34 +77,23 @@ JSON ouput for different type of orders:
 
 Look at the user input, brainstorm and logically assing the following: 
 Required keys:
-1)  "order_type" which will be only among th following (market,limit, stop_limit, oco or twap).
-2)  "symbol" will be the coin symbol like BTCUSDT for bitcoin, etc
-3)  "side" i.e. SELL or BUY
+1)  "order_type" which will be only among th following (market,limit, stop_limit, oco or twap) nothing else.
+2)  "symbol" will be the coin symbol used in binance future trade
+3)  "side" i.e. SELL or BUY. extract the keyword "buy" or "sell" from the usertext. buy means side is BUY and sell means side is SELL.
 4)  "quantity" which means the number of coins to buy or sell which acan be fractional.
-
-Optional Keys based on order type other than market: 
-5)  "price" which would the limit prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number.
-6)  "stop_price" which would a integer linked to Stop price and mentioned after it in the user input.
-    *(It cannot not be same a price)
+5)  "price" which would the prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number. Do mention Price for limit.
+6)  "stop_price" is used for Stop_limit orders and oco orders. it is linked to stop price in user text. You must extract side first from user input (buy or sell) and then(If the side is SELL then the "stop_price" must be lower than the "price" else if the side is BUY then "stop_price" must be higher than the "price".)
+    *Interchange them as necessary (It cannot not be same a price)
 7)  "twap_interval" the no. of intervals of time unit mentioned for twap order duration.
 8)  "twap_delay" the time unit mentioned for the twap order
-REQUIRED:
-- order_type         (Strictly: market, limit, stop_limit, oco or twap)
-- symbol             (convert to UPPERCASE Binance format, e.g. btc→BTCUSDT)
-- side               (BUY or SELL)
-- quantity
 
-OPTIONAL:
-- price
-- stop_price
-- twap_intervals
-- twap_delay
 
 RULES:
 - Always convert symbols to their Binance USDT futures pair (BTC→BTCUSDT, ETH→ETHUSDT, SOL→SOLUSDT, etc.)
 - If user writes only base asset (e.g. btc), assume USDT pair.
 - Only return valid JSON.
 - No explanations, no text outside JSON.
+
 Example:
 $ python bot.py "buy 2 btc"
 - order_type = market       
@@ -108,25 +102,15 @@ $ python bot.py "buy 2 btc"
 - quantity  = 2
 
 $ python bot.py "sell 1 eth limit at 3200"
-- order_type = limit       
-- symbol    = ETHUSDT
-- side      = SELL
-- quantity  = 1
-- price     = 3200
+{'order_type': 'limit', 'symbol': 'ETHUSDT', 'side': 'SELL', 'quantity': 1, 'price': 3200}
 
 $ python bot.py "twap buy btc amount 0.3"
-- order_type = twap      
-- symbol    = BTCUSDT
-- side      = BUY
-- quantity  = 0.3
+{'order_type': 'twap', 'symbol': 'BTCUSDT', 'side': 'BUY', 'quantity': 0.3}
 
 $ python bot.py "sell 0.5 eth oco for 2700 stop_price 3200"
-- order type = oco
-- symbol     = ETHUSDT
-- side       = SELL
-- quantity   = 0.5
-- price      = 2700
-- stop_price = 3200
+{'order_type': 'oco', 'symbol': 'ETHUSDT', 'side': 'SELL', 'quantity': 0.5, 'price': 2700, 'stop_price': 3200}
+
+order can only be among: 'market', 'limit', 'stop_limit', 'oco, 'twap'
 """
 
 
