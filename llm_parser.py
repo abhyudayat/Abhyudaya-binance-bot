@@ -2,7 +2,25 @@
 # Establishes the HuggingFace API connection and initializes a chat model
 # Initializes prompt for command parsing
 # Initializes prompt for command suggestion in case of error
+""" models:
+meta-llama/Llama-2-13b-chat-hf
+deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
+mistralai/Mistral-7B-v0.1
+meta‑llama/Llama-2-7b-hf
+bigscience/bloom
 
+from llm_parser import LLMParser
+
+# Initialize the LLMParser
+parser = LLMParser()
+
+# Define the command you want to parse
+user_input = 'python bot.py "btc stop limit order buy 0.1 price is 86500 stop price is 86900"'
+
+# Parse the input and print the result
+parsed_output = parser.parse(user_input)
+print(parsed_output)
+"""
 import json
 import requests
 import os
@@ -14,7 +32,7 @@ class LLMParser:
     with a supported chat model.
     """
 
-    def __init__(self, model="meta-llama/Llama-2-13b-chat-hf"):
+    def __init__(self, model="meta-llama/Llama-3.2-1B-Instruct:novita"):
         self.model = model
         self.api_key = os.getenv("HF_API_KEY")
         if not self.api_key:
@@ -33,29 +51,32 @@ You are a Trader who knows the trading keywords for a Binance Futures bot.
 You have to parse the user input CLI into a JSON.
 JSON ouput keys for different type of orders are:
 1) "market" (A market order is used to buy or sell at the current market price. It doesn't require a price parameter, only the quantity and side (buy/sell).)
-{
-  "order_type": ,
-  "symbol": ,
-  "side": ,
-  "quantity": ,
-}
+    Exact keys in JSON output:
+    {
+      "order_type": ,
+      "symbol": ,
+      "side": ,
+      "quantity": ,
+    }
 2) "limit" (A limit order allows you to specify a price at which you want to buy or sell. You need to specify the price, along with the quantity and side.)
-{
-  "order_type": ,
-  "symbol": ,
-  "side": ,
-  "quantity": ,
-  "price": ,
-}
+    Exact keys in JSON output:
+    {
+        "order_type": ,
+        "symbol": ,
+        "side": ,
+        "quantity": ,
+        "price": 
+    }
 3) "stop_limit" (A stop-limit order is an order to buy or sell once a specified stop price is reached. It also requires a price (limit price) and a stop_price (the trigger price).)
-{
-  "order_type": ,
-  "symbol": ,
-  "side": ,
-  "quantity": ,
-  "stop_price": ,
-  "price": ,
-}
+    Exact keys in JSON output:
+    {
+        "order_type": ,
+        "symbol": ,
+        "side": ,
+        "quantity": ,
+        "stop_price": ,
+        "price": ,
+    }
 4) "oco" (One Cancels Other, An OCO (One Cancels Other) order is used to place two orders simultaneously. If one of them is filled, the other is canceled automatically. It involves two orders: a take-profit (limit) order and a stop-loss (market) order.)
 {
   "order_type": "oco",
@@ -80,7 +101,7 @@ Required keys:
 1)  "order_type" which will be only among th following (market,limit, stop_limit, oco or twap) nothing else.
 2)  "symbol" will be the coin symbol used in binance future trade
 3)  "side" i.e. SELL or BUY. extract the keyword "buy" or "sell" from the usertext. buy means side is BUY and sell means side is SELL.
-4)  "quantity" which means the number of coins to buy or sell which acan be fractional.
+4)  "quantity" which means the number of coins to buy or sell which can be fractional.
 5)  "price" which would the prices for LIMIT and STOP_LIMIT type orders. it will be an integer or real number. Do mention Price for limit.
 6)  "stop_price" is used for Stop_limit orders and oco orders. it is linked to stop price in user text. You must extract side first from user input (buy or sell) and then(If the side is SELL then the "stop_price" must be lower than the "price" else if the side is BUY then "stop_price" must be higher than the "price".)
     *Interchange them as necessary (It cannot not be same a price)
@@ -129,7 +150,6 @@ order can only be among: 'market', 'limit', 'stop_limit', 'oco, 'twap'
         try:
             response = requests.post(self.url, headers=self.headers, json=payload)
             data = response.json()
-
             content = data["choices"][0]["message"]["content"]
 
             # Extract JSON block
