@@ -1,4 +1,4 @@
-# project_root/src/advanced/oco.py
+# /src/advanced/oco.py
 
 import uuid
 from src.logger import (

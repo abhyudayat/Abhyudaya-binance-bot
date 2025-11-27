@@ -1,4 +1,4 @@
-# project_root/src/limit_orders.py
+# /src/limit_orders.py
 
 from src.logger import log_info, log_error, log_api_request, log_api_response, log_order
 

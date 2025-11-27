@@ -1,4 +1,5 @@
-# project_root/graph.py
+#/graph.py
+#langgragh stateflow model with nodes and edges 
 
 from langgraph.graph import StateGraph, START, END
 from typing import Dict, Any
@@ -20,9 +21,6 @@ def build_bot_graph():
 
     graph = StateGraph(State)
 
-    # ---------------------------
-    # VALIDATE NODE
-    # ---------------------------
     def validate_node(state: State) -> State:
         try:
             cleaned = validate(state)
@@ -31,15 +29,9 @@ def build_bot_graph():
             log_error("Validation error", {"error": str(e)})
             raise
 
-    # ---------------------------
-    # ROUTE NODE
-    # ---------------------------
     def route_node(state: State):
         return {"next": state["order_type"].lower(), **state}
 
-    # ---------------------------
-    # MARKET NODE
-    # ---------------------------
     def market_node(state: State) -> State:
         return execute_market_order(
             state["client"],
@@ -48,9 +40,6 @@ def build_bot_graph():
             state["quantity"]
         )
 
-    # ---------------------------
-    # LIMIT NODE
-    # ---------------------------
     def limit_node(state: State) -> State:
         return execute_limit_order(
             state["client"],
@@ -60,9 +49,6 @@ def build_bot_graph():
             state["price"]
         )
 
-    # ---------------------------
-    # STOP-LIMIT NODE
-    # ---------------------------
     def stop_limit_node(state: State) -> State:
         return execute_stop_limit_order(
             state["client"],
@@ -72,10 +58,7 @@ def build_bot_graph():
             state["stop_price"],
             state["price"]
         )
-
-    # ---------------------------
-    # OCO NODE
-    # --------------------------- 
+ 
     def oco_node(state: State) -> State:
         return execute_oco_order(
             state["client"],
@@ -86,9 +69,6 @@ def build_bot_graph():
             state["stop_price"]
         )
 
-    # ---------------------------
-    # TWAP NODE
-    # ---------------------------
     def twap_node(state: State) -> State:
         return execute_twap_order(
             state["client"],
@@ -97,15 +77,11 @@ def build_bot_graph():
             state["quantity"]
         )
 
-    # ---------------------------
-    # DONE NODE
-    # ---------------------------
     def done_node(state: State) -> State:
         log_info("Order execution complete", {"result": state})
         return state
-    # --------------------------------------------------
-    # Add Nodes
-    # --------------------------------------------------
+
+    # Nodes
     graph.add_node("validate_node", validate_node)
     graph.add_node("route_node", route_node)
     graph.add_node("market_node", market_node)
@@ -115,16 +91,12 @@ def build_bot_graph():
     graph.add_node("twap_node", twap_node)
     graph.add_node("done_node", done_node)
 
-    # --------------------------------------------------
     # EDGES
-    # --------------------------------------------------
     graph.set_entry_point("validate_node")
-
     graph.add_edge("validate_node", "route_node")
-
     graph.add_conditional_edges(
         "route_node",
-        lambda s: s["next"],   # routing key
+        lambda s: s["next"],
         {
             "market": "market_node",
             "limit": "limit_node",

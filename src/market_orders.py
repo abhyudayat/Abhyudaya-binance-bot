@@ -1,4 +1,4 @@
-# src/market_orders.py
+# /src/market_orders.py
 
 from src.logger import (
     log_info,
@@ -9,16 +9,6 @@ from src.logger import (
 )
 
 def execute_market_order(client, symbol, side, quantity):
-    """
-    Executes a MARKET order on Binance Futures Testnet.
-    
-    Parameters:
-        client   : Binance Client instance
-        symbol   : "BTCUSDT", "ETHUSDT", etc.
-        side     : "BUY" or "SELL"
-        quantity : float or int
-    """
-
     order_payload = {
         "symbol": symbol,
         "side": side,
@@ -27,14 +17,11 @@ def execute_market_order(client, symbol, side, quantity):
     }
 
     try:
-        # Logging the request
         log_info("Placing MARKET order", order_payload)
         log_api_request("futures_create_order", order_payload)
 
-        # Execute the order
         response = client.futures_create_order(**order_payload)
 
-        # Log the response
         log_api_response("futures_create_order", response)
         log_order("MARKET", {
             "symbol": symbol,

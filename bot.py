@@ -1,4 +1,4 @@
-# project_root/bot.py
+#/bot.py
 
 import sys
 from llm_parser import LLMParser
@@ -18,7 +18,6 @@ if __name__ == "__main__":
 
     user_text = " ".join(sys.argv[1:])
     log_info("START: Command recieved",{"input":user_text})
-    # Load API keys from environment variables
     try:
         client = get_client(testnet=True)
     except Exception as e:

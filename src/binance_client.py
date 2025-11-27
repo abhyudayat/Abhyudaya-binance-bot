@@ -1,4 +1,4 @@
-# project_root/src/binance_client.py
+# /src/binance_client.py
 
 import os
 from binance.client import Client

@@ -1,4 +1,4 @@
-# src/validators.py
+# /src/validators.py
 
 import math
 from typing import Optional, Dict, Any
@@ -28,30 +28,27 @@ def _normalize_symbol(symbol: str) -> str:
 
 
 def _required_fields_for_order_type(order_type: str):
-    order_type = (order_type or "").strip().lower()
+    order_type = (order_type).strip().lower()
     mapping = {
         "market": ["symbol", "side", "quantity"],
         "limit": ["symbol", "side", "quantity", "price"],
         "stop_limit": ["symbol", "side", "quantity", "stop_price", "price"],
         "oco": ["symbol", "side", "quantity", "price", "stop_price"],
         "twap": ["symbol", "side", "quantity"],
-        "grid": ["symbol", "side", "quantity"],
     }
     return mapping.get(order_type, ["symbol", "side", "quantity"])
 
 
 def validate(state: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Validate and normalize user input state.
-    Converts values to correct types and ensures required fields exist.
-    """
+    # Validate user input
+    # Converts values to correct types and ensures required fields exist
 
     if not isinstance(state, dict):
         raise ValueError("State must be a dictionary")
 
     cleaned = {}
 
-    # Determine order type
+    # Determines order type
     order_type = state.get("order_type") or state.get("type") or "market"
     order_type = order_type.strip().lower()
     cleaned["order_type"] = order_type
@@ -77,21 +74,21 @@ def validate(state: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("quantity must be > 0")
     cleaned["quantity"] = qty
 
-    # Price (optional)
+    # Price
     if "price" in state:
         price = _to_float(state["price"], "price")
         if price <= 0:
             raise ValueError("price must be > 0")
         cleaned["price"] = price
 
-    # Stop price (optional)
+    # Stop price
     if "stop_price" in state:
         stop = _to_float(state["stop_price"], "stop_price")
         if stop <= 0:
             raise ValueError("stop_price must be > 0")
         cleaned["stop_price"] = stop
 
-    # Pass through other fields
+    # Other fields
     for k, v in state.items():
         if k not in cleaned:
             cleaned[k] = v

@@ -1,4 +1,4 @@
-# project_root/src/stop_limit.py
+# /src/stop_limit.py
 
 from src.logger import (
     log_info,
@@ -9,9 +9,6 @@ from src.logger import (
 )
 
 def execute_stop_limit_order(client, symbol, side, quantity, stop_price, limit_price):
-    """
-    Execute a STOP-LIMIT order on Binance Futures Testnet.
-    """
 
     if client is None:
         log_error("Binance client not initialized")

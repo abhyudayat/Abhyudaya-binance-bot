@@ -8,18 +8,6 @@ deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
 mistralai/Mistral-7B-v0.1
 meta‑llama/Llama-2-7b-hf
 bigscience/bloom
-
-from llm_parser import LLMParser
-
-# Initialize the LLMParser
-parser = LLMParser()
-
-# Define the command you want to parse
-user_input = 'python bot.py "btc stop limit order buy 0.1 price is 86500 stop price is 86900"'
-
-# Parse the input and print the result
-parsed_output = parser.parse(user_input)
-print(parsed_output)
 """
 import json
 import requests
